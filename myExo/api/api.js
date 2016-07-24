@@ -45,7 +45,10 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var app = express();
 var UserM = require('./models/User.js'); 
-var jwt = require('./services/jwt.js'); 
+
+//jwt à la main
+//var jwt = require('./services/jwt.js'); 
+var jwt = require('jwt-simple'); 
 
 
 app.use(bodyParser.json());
