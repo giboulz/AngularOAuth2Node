@@ -44,11 +44,11 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var app = express();
-var UserM = require('./models/User.js'); 
+var UserM = require('./models/User.js');
 
 //jwt à la main
 //var jwt = require('./services/jwt.js'); 
-var jwt = require('jwt-simple'); 
+var jwt = require('jwt-simple');
 
 
 app.use(bodyParser.json());
@@ -64,44 +64,84 @@ app.use(function (req, res, next) {
 app.post('/register', function (req, res) {
     console.log(req.body);
     var user = req.body;
-    var newUser =  new UserM.model({
+    var newUser = new UserM({
         email: user.email,
         password: user.password
     });
-    
-    var payload = {
-        iss: req.hostname, 
-        sub: newUser.id, 
-    }
-    
-    var token = jwt.encode(payload, 'shhhhh....'); 
-    
+
+
+
+
+
     newUser.save(function (err) {
         //res.status(200).json(newUser);
         //on retourne l'objet new User sans le password
-        res.status(200).json({
-            user: newUser.toJSON(), 
-            token: token
-        }); 
+        createTokenAndSendIt(newUser, res);
     })
 });
 
+app.post('/login', function (req, res) {
+    req.user = req.body;
+    var emailUser = {
+        email: req.user.email
+    };
+    UserM.findOne(emailUser, function (err, user) {
+        if (err) throw err;
 
-var jobs = ['des trucs', 'ou on a  accès que','quand ', 'on est ', 'identifié', 'avec un token']; 
+        if (!user) {
+            return res.status(401).send({
+                message: 'Wrong email password...'
+            });
+        }
 
-app.get('/jobs', function(req, res){
-    
-    if(!req.headers.authorization){
-        return res.status(401).send({message: "pas le droit mec"}); 
+        user.comparePasswords(req.user.password, function (err, isMatch) {
+            if (err) throw err;
+
+            if (!isMatch) {
+                return res.status(401).send({
+                    message: 'Wrong email password...'
+                });
+
+            }
+            createTokenAndSendIt(user, res);
+        });
+    });
+});
+
+
+function createTokenAndSendIt(user, res) {
+    var payload = {
+        // iss: req.hostname,
+        sub: user.id
     }
-    
-    var token = req.headers.authorization.split(' ')[1]; 
-    var payload = jwt.decode(token, 'shhhhh....'); 
-    if(!payload.sub){
-        res.status(401).send({message:"Fail authent"}); 
+
+    var token = jwt.encode(payload, 'shhhhh....');
+
+    res.status(200).json({
+        user: user.toJSON(),
+        token: token
+    });
+}
+
+var jobs = ['des trucs', 'ou on a  accès que', 'quand ', 'on est ', 'identifié', 'avec un token'];
+
+app.get('/jobs', function (req, res) {
+
+    if (!req.headers.authorization) {
+        return res.status(401).send({
+            message: "pas le droit mec"
+        });
     }
 
-    res.json(jobs); 
+    var token = req.headers.authorization.split(' ')[1];
+    var payload = jwt.decode(token, 'shhhhh....');
+    if (!payload.sub) {
+        res.status(401).send({
+            message: "Fail authent"
+        });
+    }
+
+    res.json(jobs);
 })
 
 mongoose.connect('mongodb://localhost/jwtTuto');

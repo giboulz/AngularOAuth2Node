@@ -1,9 +1,9 @@
-'use strict'; 
+'use strict';
 
 angular
-    .module('frontEndApp').config(function($urlRouterProvider, $stateProvider, $httpProvider) {
-        
-    	$urlRouterProvider.otherwise('/'); 
+    .module('frontEndApp').config(function ($urlRouterProvider, $stateProvider, $httpProvider) {
+
+        $urlRouterProvider.otherwise('/');
 
         $stateProvider.
 
@@ -14,24 +14,29 @@ angular
         })
 
         .state('logout', {
-            url: '/logout',
-            controller:'LogoutCtrl'
-        })
-        .state('jobs', {
-            url: '/jobs',
-             templateUrl: '/views/jobs.html',
-            controller:'JobsCtrl'
-        })
+                url: '/logout',
+                controller: 'LogoutCtrl'
+            })
+            .state('jobs', {
+                url: '/jobs',
+                templateUrl: '/views/jobs.html',
+                controller: 'JobsCtrl'
+            })
+            .state('login', {
+                url: '/login',
+                templateUrl: '/views/login.html',
+                controller: 'LoginCtrl'
+            })
 
 
         .state('register', {
             url: '/register',
             templateUrl: '/views/register.html',
-            controller:'RegisterCtrl'
+            controller: 'RegisterCtrl'
 
         });
-    
-    $httpProvider.interceptors.push('authInterceptor'); 
+
+        $httpProvider.interceptors.push('authInterceptor');
     })
 
-.constant('API_URL', 'http://localhost:3000/'); 
+.constant('API_URL', 'http://localhost:3000/');
